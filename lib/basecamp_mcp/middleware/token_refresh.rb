@@ -6,21 +6,18 @@ module BasecampMcp
       def initialize(app, token_store:)
         super(app)
         @token_store = token_store
-        @refreshing = false
+        @refresh_mutex = Mutex.new
       end
 
       def call(env)
         response = @app.call(env)
 
-        if response.status == 401 && !@refreshing
-          @refreshing = true
-          begin
+        if response.status == 401
+          @refresh_mutex.synchronize do
             @token_store.refresh!
             env.request_headers["Authorization"] = "Bearer #{@token_store.access_token}"
-            response = @app.call(env)
-          ensure
-            @refreshing = false
           end
+          response = @app.call(env)
         end
 
         response

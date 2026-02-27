@@ -79,9 +79,10 @@ module BasecampMcp
     end
 
     def save_credentials
-      FileUtils.mkdir_p(CONFIG_DIR)
-      File.write(CREDENTIALS_FILE, JSON.pretty_generate(@credentials))
-      File.chmod(0600, CREDENTIALS_FILE)
+      FileUtils.mkdir_p(CONFIG_DIR, mode: 0700)
+      File.open(CREDENTIALS_FILE, File::CREAT | File::WRONLY | File::TRUNC, 0600) do |f|
+        f.write(JSON.pretty_generate(@credentials))
+      end
     end
   end
 end
