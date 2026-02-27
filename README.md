@@ -8,27 +8,34 @@ Named after the Main Force Patrol from *Mad Max* -- because someone has to bring
 
 Every existing Basecamp MCP server is incomplete. The best Python implementation covers 64 tools. The Node.js "complete" version is undocumented and untested. None are written in Ruby, despite Basecamp being built by a Ruby shop.
 
-MFP targets **137 tools** covering the entire Basecamp 4 API surface. Phase 1 ships with 41 tools across the most-used domains.
+MFP ships **146 tools** covering the entire Basecamp 4 API surface.
 
 | Feature | mcp-basecamp (PyPI) | georgeantonopoulos | MFP |
 |---------|--------------------|--------------------|-----|
 | Language | Python | Python | Ruby |
-| Tools | ~15 | 64 | 41 (Phase 1), 137 planned |
-| Card Tables | No | No | Planned |
-| Client Access | No | No | Planned |
-| Webhooks | No | No | Planned |
+| Tools | ~15 | 64 | **146** |
+| Card Tables | No | No | Yes |
+| Client Access | No | No | Yes |
+| Webhooks | No | No | Yes |
+| Campfire / Chat | No | Partial | Yes |
+| Documents & Vaults | No | Partial | Yes |
+| Schedule | No | Partial | Yes |
+| Timesheets | No | Partial | Yes |
 | Rich text handling | Basic | Basic | Full (HTML stripped for AI) |
 | Pagination | No | Yes | Yes (automatic) |
 | Rate limiting | No | No | Yes (automatic retry) |
 | Token refresh | No | Yes | Yes (automatic) |
 
-## Current Tools (Phase 1)
+## Tools (146)
 
 ### People (4 tools)
 `list_people` `get_person` `get_my_profile` `list_pingable_people`
 
 ### Projects (5 tools)
 `list_projects` `get_project` `create_project` `update_project` `trash_project`
+
+### Templates (5 tools)
+`list_templates` `get_template` `create_template` `update_template` `trash_template`
 
 ### Message Boards (1 tool)
 `get_message_board`
@@ -39,17 +46,68 @@ MFP targets **137 tools** covering the entire Basecamp 4 API surface. Phase 1 sh
 ### Message Types (5 tools)
 `list_message_types` `get_message_type` `create_message_type` `update_message_type` `trash_message_type`
 
+### Campfire / Chat (5 tools)
+`get_campfire` `list_campfire_lines` `get_campfire_line` `create_campfire_line` `trash_campfire_line`
+
+### Chatbots (6 tools)
+`list_chatbots` `get_chatbot` `create_chatbot` `update_chatbot` `trash_chatbot` `create_chatbot_line`
+
 ### To-Do Sets (1 tool)
 `get_todoset`
 
 ### To-Do Lists (5 tools)
 `list_todolists` `get_todolist` `create_todolist` `update_todolist` `trash_todolist`
 
+### To-Do List Groups (4 tools)
+`list_todolist_groups` `get_todolist_group` `create_todolist_group` `reposition_todolist_group`
+
 ### To-Dos (8 tools)
 `list_todos` `get_todo` `create_todo` `update_todo` `complete_todo` `uncomplete_todo` `reposition_todo` `trash_todo`
 
+### Card Tables / Kanban (19 tools)
+`get_card_table` `list_card_table_columns` `get_card_table_column` `create_card_table_column` `update_card_table_column` `trash_card_table_column` `list_cards` `get_card` `create_card` `update_card` `move_card` `trash_card` `list_card_steps` `get_card_step` `create_card_step` `complete_card_step` `uncomplete_card_step` `reposition_card_step` `trash_card_step`
+
+### Documents (5 tools)
+`list_documents` `get_document` `create_document` `update_document` `trash_document`
+
+### Vaults / Folders (5 tools)
+`list_vaults` `get_vault` `create_vault` `update_vault` `trash_vault`
+
+### Uploads & Attachments (6 tools)
+`list_uploads` `get_upload` `create_upload` `update_upload` `trash_upload` `create_attachment`
+
+### Schedule (6 tools)
+`get_schedule` `list_schedule_entries` `get_schedule_entry` `create_schedule_entry` `update_schedule_entry` `trash_schedule_entry`
+
+### Check-ins (5 tools)
+`get_questionnaire` `list_questions` `get_question` `list_question_answers` `get_question_answer`
+
+### Email Inbox (5 tools)
+`get_inbox` `list_inbox_forwards` `get_forward` `list_inbox_replies` `get_inbox_reply`
+
+### Client Access (9 tools)
+`list_client_visible_recordings` `toggle_client_visibility` `get_client_approval` `list_client_approval_responses` `list_client_correspondences` `get_client_correspondence` `create_client_correspondence` `list_client_replies` `get_client_reply`
+
 ### Comments (5 tools)
 `list_comments` `get_comment` `create_comment` `update_comment` `trash_comment`
+
+### Recordings (4 tools)
+`list_recordings` `trash_recording` `archive_recording` `unarchive_recording`
+
+### Subscriptions (4 tools)
+`list_subscriptions` `subscribe` `unsubscribe` `update_subscription`
+
+### Events / Activity Log (2 tools)
+`list_events` `get_event`
+
+### Lineup Markers (4 tools)
+`list_lineup_markers` `create_lineup_marker` `update_lineup_marker` `trash_lineup_marker`
+
+### Timesheets (6 tools)
+`get_timesheet` `list_time_entries` `get_time_entry` `create_time_entry` `update_time_entry` `trash_time_entry`
+
+### Webhooks (5 tools)
+`list_webhooks` `get_webhook` `create_webhook` `update_webhook` `trash_webhook`
 
 ## Requirements
 
@@ -101,7 +159,35 @@ Tokens are automatically refreshed on 401 responses.
 
 ### Claude Desktop
 
-Add MFP to your Claude Desktop config at `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Claude Desktop launches MCP servers with a minimal `PATH` that typically only includes `/usr/bin`. If you use a Ruby version manager (mise, rbenv, asdf, rvm), Claude Desktop won't find your managed Ruby -- it will find the ancient system Ruby instead, and fail to load gems.
+
+The fix is to use the included wrapper script, which sets the correct Ruby path:
+
+```bash
+# First, edit the wrapper to match your Ruby path:
+# Open bin/mfp-basecamp-wrapper and update the PATH line
+# to point at your Ruby installation.
+```
+
+Then add MFP to your Claude Desktop config at `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "mfp-basecamp": {
+      "command": "/path/to/mfp-basecamp/bin/mfp-basecamp-wrapper",
+      "args": [],
+      "env": {
+        "BASECAMP_API_KEY": "your-api-token-here",
+        "BASECAMP_ACCOUNT_ID": "your-account-id",
+        "BASECAMP_USER_AGENT": "MFP Basecamp (you@example.com)"
+      }
+    }
+  }
+}
+```
+
+If you're **not** using a version manager and your default `ruby` is 3.1+, you can skip the wrapper and use `ruby` directly:
 
 ```json
 {
@@ -194,28 +280,37 @@ lib/
     middleware/
       token_refresh.rb               # Auto-refresh on 401
       rate_limit_retry.rb            # Auto-retry on 429 with Retry-After
-    tools/
+    tools/                           # 27 tool files, 146 tools total
       people.rb                      # 4 tools
       projects.rb                    # 5 tools
+      templates.rb                   # 5 tools
       message_boards.rb              # 1 tool
       messages.rb                    # 7 tools
       message_types.rb               # 5 tools
+      campfire.rb                    # 5 tools
+      chatbots.rb                    # 6 tools
       todosets.rb                    # 1 tool
       todolists.rb                   # 5 tools
+      todolist_groups.rb             # 4 tools
       todos.rb                       # 8 tools
+      card_tables.rb                 # 19 tools
+      documents.rb                   # 5 tools
+      vaults.rb                      # 5 tools
+      uploads.rb                     # 6 tools
+      schedule.rb                    # 6 tools
+      checkins.rb                    # 5 tools
+      inbox.rb                       # 5 tools
+      client_access.rb               # 9 tools
       comments.rb                    # 5 tools
+      recordings.rb                  # 4 tools
+      subscriptions.rb               # 4 tools
+      events.rb                      # 2 tools
+      lineup.rb                      # 4 tools
+      timesheets.rb                  # 6 tools
+      webhooks.rb                    # 5 tools
 ```
 
 Tools are auto-discovered at startup. Adding a new domain means creating a file in `tools/` and adding its name to the `TOOL_FILES` array in `tools.rb`. No manual registration needed.
-
-## Roadmap
-
-| Phase | Domain | Tools | Status |
-|-------|--------|-------|--------|
-| 1 | People, Projects, Messages, To-Dos, Comments | 41 | Shipped |
-| 2 | Documents, Vaults, Schedule, Card Tables | 36 | Planned |
-| 3 | Campfire, Chatbots, Check-ins, Inbox, Client Access | 35 | Planned |
-| 4 | Recordings, Subscriptions, Events, Lineup, Timesheets, Webhooks | 26 | Planned |
 
 ## Built With
 

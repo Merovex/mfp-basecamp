@@ -14,7 +14,7 @@ module BasecampMcp
     def error_response(message)
       MCP::Tool::Response.new(
         [{ type: "text", text: "Error: #{message}" }],
-        is_error: true
+        error: true
       )
     end
   end

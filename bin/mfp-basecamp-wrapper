@@ -1,0 +1,5 @@
+#!/bin/bash
+export PATH="$PATH"
+export BUNDLE_GEMFILE="/Gemfile"
+cd 
+exec bundle exec ruby bin/basecamp-mcp "$@"

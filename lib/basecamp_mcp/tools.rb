@@ -7,13 +7,31 @@ module BasecampMcp
     TOOL_FILES = %w[
       people
       projects
+      templates
       message_boards
       messages
       message_types
+      campfire
+      chatbots
       todosets
       todolists
+      todolist_groups
       todos
+      card_tables
+      documents
+      vaults
+      uploads
+      schedule
+      checkins
+      inbox
+      client_access
       comments
+      recordings
+      subscriptions
+      events
+      lineup
+      timesheets
+      webhooks
     ].freeze
 
     TOOL_FILES.each { |f| require_relative "tools/#{f}" }
