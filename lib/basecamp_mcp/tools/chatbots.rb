@@ -5,12 +5,12 @@ module BasecampMcp
     class ListChatbots < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all chatbots configured for a campfire."
+      description 'List all chatbots configured for a campfire.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          campfire_id: { type: "integer", description: "The campfire ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          campfire_id: { type: 'integer', description: 'The campfire ID' }
         },
         required: %w[project_id campfire_id]
       )
@@ -21,7 +21,7 @@ module BasecampMcp
             "buckets/#{project_id}/chats/#{campfire_id}/integrations"
           )
           text_response(bots)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -30,12 +30,12 @@ module BasecampMcp
     class GetChatbot < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific chatbot."
+      description 'Get a specific chatbot.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          chatbot_id: { type: "integer", description: "The chatbot ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          chatbot_id: { type: 'integer', description: 'The chatbot ID' }
         },
         required: %w[project_id chatbot_id]
       )
@@ -44,7 +44,7 @@ module BasecampMcp
         def call(project_id:, chatbot_id:, server_context:)
           bot = client(server_context:).get("buckets/#{project_id}/chats/integrations/#{chatbot_id}")
           text_response(bot)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -53,27 +53,27 @@ module BasecampMcp
     class CreateChatbot < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a new chatbot for a campfire."
+      description 'Create a new chatbot for a campfire.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          campfire_id: { type: "integer", description: "The campfire ID" },
-          service_name: { type: "string", description: "Chatbot display name" },
-          command_url: { type: "string", description: "Webhook URL the chatbot posts to" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          campfire_id: { type: 'integer', description: 'The campfire ID' },
+          service_name: { type: 'string', description: 'Chatbot display name' },
+          command_url: { type: 'string', description: 'Webhook URL the chatbot posts to' }
         },
         required: %w[project_id campfire_id service_name]
       )
 
       class << self
-        def call(project_id:, campfire_id:, service_name:, command_url: nil, server_context:)
+        def call(project_id:, campfire_id:, service_name:, server_context:, command_url: nil)
           body = { service_name: service_name }
           body[:command_url] = command_url if command_url
           bot = client(server_context:).post(
             "buckets/#{project_id}/chats/#{campfire_id}/integrations", body
           )
           text_response(bot)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -86,22 +86,22 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          chatbot_id: { type: "integer", description: "The chatbot ID" },
-          service_name: { type: "string", description: "New display name" },
-          command_url: { type: "string", description: "New webhook URL" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          chatbot_id: { type: 'integer', description: 'The chatbot ID' },
+          service_name: { type: 'string', description: 'New display name' },
+          command_url: { type: 'string', description: 'New webhook URL' }
         },
         required: %w[project_id chatbot_id]
       )
 
       class << self
-        def call(project_id:, chatbot_id:, service_name: nil, command_url: nil, server_context:)
+        def call(project_id:, chatbot_id:, server_context:, service_name: nil, command_url: nil)
           body = {}
           body[:service_name] = service_name if service_name
           body[:command_url] = command_url if command_url
           bot = client(server_context:).put("buckets/#{project_id}/chats/integrations/#{chatbot_id}", body)
           text_response(bot)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -110,12 +110,12 @@ module BasecampMcp
     class TrashChatbot < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Trash a chatbot."
+      description 'Trash a chatbot.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          chatbot_id: { type: "integer", description: "The chatbot ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          chatbot_id: { type: 'integer', description: 'The chatbot ID' }
         },
         required: %w[project_id chatbot_id]
       )
@@ -123,8 +123,8 @@ module BasecampMcp
       class << self
         def call(project_id:, chatbot_id:, server_context:)
           client(server_context:).delete("buckets/#{project_id}/chats/integrations/#{chatbot_id}")
-          text_response({ status: "trashed", chatbot_id: chatbot_id })
-        rescue => e
+          text_response({ status: 'trashed', chatbot_id: chatbot_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -133,14 +133,14 @@ module BasecampMcp
     class CreateChatbotLine < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Post a message as a chatbot to a campfire."
+      description 'Post a message as a chatbot to a campfire.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          campfire_id: { type: "integer", description: "The campfire ID" },
-          chatbot_id: { type: "integer", description: "The chatbot ID" },
-          content: { type: "string", description: "Message content" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          campfire_id: { type: 'integer', description: 'The campfire ID' },
+          chatbot_id: { type: 'integer', description: 'The chatbot ID' },
+          content: { type: 'string', description: 'Message content' }
         },
         required: %w[project_id campfire_id chatbot_id content]
       )
@@ -152,7 +152,7 @@ module BasecampMcp
             { content: content }
           )
           text_response(line)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end

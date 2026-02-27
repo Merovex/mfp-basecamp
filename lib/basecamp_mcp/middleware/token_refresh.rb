@@ -15,7 +15,7 @@ module BasecampMcp
         if response.status == 401
           @refresh_mutex.synchronize do
             @token_store.refresh!
-            env.request_headers["Authorization"] = "Bearer #{@token_store.access_token}"
+            env.request_headers['Authorization'] = "Bearer #{@token_store.access_token}"
           end
           response = @app.call(env)
         end

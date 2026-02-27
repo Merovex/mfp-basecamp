@@ -5,12 +5,12 @@ module BasecampMcp
     class ListSubscriptions < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all subscribers for a recording."
+      description 'List all subscribers for a recording.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          recording_id: { type: "integer", description: "The recording ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          recording_id: { type: 'integer', description: 'The recording ID' }
         },
         required: %w[project_id recording_id]
       )
@@ -21,7 +21,7 @@ module BasecampMcp
             "buckets/#{project_id}/recordings/#{recording_id}/subscription"
           )
           text_response(subs)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -34,9 +34,9 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          recording_id: { type: "integer", description: "The recording ID" },
-          subscriptions: { type: "array", items: { type: "integer" }, description: "People IDs to subscribe" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          recording_id: { type: 'integer', description: 'The recording ID' },
+          subscriptions: { type: 'array', items: { type: 'integer' }, description: 'People IDs to subscribe' }
         },
         required: %w[project_id recording_id subscriptions]
       )
@@ -48,7 +48,7 @@ module BasecampMcp
             { subscriptions: subscriptions }
           )
           text_response(result)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -61,9 +61,9 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          recording_id: { type: "integer", description: "The recording ID" },
-          subscriptions: { type: "array", items: { type: "integer" }, description: "People IDs to unsubscribe" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          recording_id: { type: 'integer', description: 'The recording ID' },
+          subscriptions: { type: 'array', items: { type: 'integer' }, description: 'People IDs to unsubscribe' }
         },
         required: %w[project_id recording_id subscriptions]
       )
@@ -75,7 +75,7 @@ module BasecampMcp
             { subscriptions: subscriptions }
           )
           text_response(result)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -84,12 +84,12 @@ module BasecampMcp
     class UpdateSubscription < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Update subscription (subscribe yourself to a recording)."
+      description 'Update subscription (subscribe yourself to a recording).'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          recording_id: { type: "integer", description: "The recording ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          recording_id: { type: 'integer', description: 'The recording ID' }
         },
         required: %w[project_id recording_id]
       )
@@ -100,7 +100,7 @@ module BasecampMcp
             "buckets/#{project_id}/recordings/#{recording_id}/subscription"
           )
           text_response(result)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end

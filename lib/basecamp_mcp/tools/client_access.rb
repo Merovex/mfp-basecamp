@@ -5,13 +5,13 @@ module BasecampMcp
     class ListClientVisibleRecordings < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all client-visible items in a project."
+      description 'List all client-visible items in a project.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' }
         },
-        required: ["project_id"]
+        required: ['project_id']
       )
 
       class << self
@@ -20,7 +20,7 @@ module BasecampMcp
             "buckets/#{project_id}/client/recordings"
           )
           text_response(recordings)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -29,13 +29,13 @@ module BasecampMcp
     class ToggleClientVisibility < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Toggle client visibility on a recording. Makes it visible or hidden to clients."
+      description 'Toggle client visibility on a recording. Makes it visible or hidden to clients.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          recording_id: { type: "integer", description: "The recording ID" },
-          visible: { type: "boolean", description: "true to make visible to clients, false to hide" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          recording_id: { type: 'integer', description: 'The recording ID' },
+          visible: { type: 'boolean', description: 'true to make visible to clients, false to hide' }
         },
         required: %w[project_id recording_id visible]
       )
@@ -51,8 +51,8 @@ module BasecampMcp
               "buckets/#{project_id}/recordings/#{recording_id}/client_visibility"
             )
           end
-          text_response({ status: visible ? "visible" : "hidden", recording_id: recording_id })
-        rescue => e
+          text_response({ status: visible ? 'visible' : 'hidden', recording_id: recording_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -61,12 +61,12 @@ module BasecampMcp
     class GetClientApproval < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a client approval."
+      description 'Get a client approval.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          approval_id: { type: "integer", description: "The client approval ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          approval_id: { type: 'integer', description: 'The client approval ID' }
         },
         required: %w[project_id approval_id]
       )
@@ -77,7 +77,7 @@ module BasecampMcp
             "buckets/#{project_id}/client/approvals/#{approval_id}"
           )
           text_response(approval)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -86,12 +86,12 @@ module BasecampMcp
     class ListClientApprovalResponses < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List responses to a client approval."
+      description 'List responses to a client approval.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          approval_id: { type: "integer", description: "The client approval ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          approval_id: { type: 'integer', description: 'The client approval ID' }
         },
         required: %w[project_id approval_id]
       )
@@ -102,7 +102,7 @@ module BasecampMcp
             "buckets/#{project_id}/client/approvals/#{approval_id}/responses"
           )
           text_response(responses)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -111,13 +111,13 @@ module BasecampMcp
     class ListClientCorrespondences < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all client correspondences in a project."
+      description 'List all client correspondences in a project.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' }
         },
-        required: ["project_id"]
+        required: ['project_id']
       )
 
       class << self
@@ -125,9 +125,9 @@ module BasecampMcp
           correspondences = client(server_context:).get_all(
             "buckets/#{project_id}/client/correspondences"
           )
-          correspondences.each { |c| c["content"] = HtmlUtils.strip_for_ai(c["content"]) if c["content"] }
+          correspondences.each { |c| c['content'] = HtmlUtils.strip_for_ai(c['content']) if c['content'] }
           text_response(correspondences)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -136,12 +136,12 @@ module BasecampMcp
     class GetClientCorrespondence < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific client correspondence."
+      description 'Get a specific client correspondence.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          correspondence_id: { type: "integer", description: "The correspondence ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          correspondence_id: { type: 'integer', description: 'The correspondence ID' }
         },
         required: %w[project_id correspondence_id]
       )
@@ -151,9 +151,9 @@ module BasecampMcp
           corr = client(server_context:).get(
             "buckets/#{project_id}/client/correspondences/#{correspondence_id}"
           )
-          corr["content"] = HtmlUtils.strip_for_ai(corr["content"]) if corr["content"]
+          corr['content'] = HtmlUtils.strip_for_ai(corr['content']) if corr['content']
           text_response(corr)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -162,13 +162,13 @@ module BasecampMcp
     class CreateClientCorrespondence < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a new client correspondence."
+      description 'Create a new client correspondence.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          subject: { type: "string", description: "Correspondence subject" },
-          content: { type: "string", description: "Correspondence body (supports HTML)" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          subject: { type: 'string', description: 'Correspondence subject' },
+          content: { type: 'string', description: 'Correspondence body (supports HTML)' }
         },
         required: %w[project_id subject content]
       )
@@ -180,7 +180,7 @@ module BasecampMcp
             { subject: subject, content: content }
           )
           text_response(corr)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -189,12 +189,12 @@ module BasecampMcp
     class ListClientReplies < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List replies to a client correspondence."
+      description 'List replies to a client correspondence.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          correspondence_id: { type: "integer", description: "The correspondence ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          correspondence_id: { type: 'integer', description: 'The correspondence ID' }
         },
         required: %w[project_id correspondence_id]
       )
@@ -204,9 +204,9 @@ module BasecampMcp
           replies = client(server_context:).get_all(
             "buckets/#{project_id}/client/correspondences/#{correspondence_id}/replies"
           )
-          replies.each { |r| r["content"] = HtmlUtils.strip_for_ai(r["content"]) if r["content"] }
+          replies.each { |r| r['content'] = HtmlUtils.strip_for_ai(r['content']) if r['content'] }
           text_response(replies)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -215,12 +215,12 @@ module BasecampMcp
     class GetClientReply < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific reply to a client correspondence."
+      description 'Get a specific reply to a client correspondence.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          reply_id: { type: "integer", description: "The reply ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          reply_id: { type: 'integer', description: 'The reply ID' }
         },
         required: %w[project_id reply_id]
       )
@@ -228,9 +228,9 @@ module BasecampMcp
       class << self
         def call(project_id:, reply_id:, server_context:)
           reply = client(server_context:).get("buckets/#{project_id}/client/replies/#{reply_id}")
-          reply["content"] = HtmlUtils.strip_for_ai(reply["content"]) if reply["content"]
+          reply['content'] = HtmlUtils.strip_for_ai(reply['content']) if reply['content']
           text_response(reply)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end

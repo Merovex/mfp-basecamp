@@ -5,21 +5,22 @@ module BasecampMcp
     class ListProjects < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all projects. Supports filtering by status (active, archived, trashed)."
+      description 'List all projects. Supports filtering by status (active, archived, trashed).'
 
       input_schema(
         properties: {
-          status: { type: "string", enum: %w[active archived trashed], description: "Filter by status. Default: active" }
+          status: { type: 'string', enum: %w[active archived trashed],
+                    description: 'Filter by status. Default: active' }
         }
       )
 
       class << self
-        def call(status: nil, server_context:)
+        def call(server_context:, status: nil)
           params = {}
           params[:status] = status if status
-          projects = client(server_context:).get_all("projects", params)
+          projects = client(server_context:).get_all('projects', params)
           text_response(projects)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -32,16 +33,16 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project ID" }
+          project_id: { type: 'integer', description: 'The project ID' }
         },
-        required: ["project_id"]
+        required: ['project_id']
       )
 
       class << self
         def call(project_id:, server_context:)
           project = client(server_context:).get("projects/#{project_id}")
           text_response(project)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -50,23 +51,23 @@ module BasecampMcp
     class CreateProject < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a new project."
+      description 'Create a new project.'
 
       input_schema(
         properties: {
-          name: { type: "string", description: "Project name" },
-          description: { type: "string", description: "Project description" }
+          name: { type: 'string', description: 'Project name' },
+          description: { type: 'string', description: 'Project description' }
         },
-        required: ["name"]
+        required: ['name']
       )
 
       class << self
-        def call(name:, description: nil, server_context:)
+        def call(name:, server_context:, description: nil)
           body = { name: name }
           body[:description] = description if description
-          project = client(server_context:).post("projects", body)
+          project = client(server_context:).post('projects', body)
           text_response(project)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -79,21 +80,21 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project ID" },
-          name: { type: "string", description: "New project name" },
-          description: { type: "string", description: "New project description" }
+          project_id: { type: 'integer', description: 'The project ID' },
+          name: { type: 'string', description: 'New project name' },
+          description: { type: 'string', description: 'New project description' }
         },
-        required: ["project_id"]
+        required: ['project_id']
       )
 
       class << self
-        def call(project_id:, name: nil, description: nil, server_context:)
+        def call(project_id:, server_context:, name: nil, description: nil)
           body = {}
           body[:name] = name if name
           body[:description] = description if description
           project = client(server_context:).put("projects/#{project_id}", body)
           text_response(project)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -102,20 +103,20 @@ module BasecampMcp
     class TrashProject < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Move a project to the trash."
+      description 'Move a project to the trash.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project ID to trash" }
+          project_id: { type: 'integer', description: 'The project ID to trash' }
         },
-        required: ["project_id"]
+        required: ['project_id']
       )
 
       class << self
         def call(project_id:, server_context:)
           client(server_context:).delete("projects/#{project_id}")
-          text_response({ status: "trashed", project_id: project_id })
-        rescue => e
+          text_response({ status: 'trashed', project_id: project_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end

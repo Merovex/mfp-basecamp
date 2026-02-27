@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "mcp"
+require 'mcp'
 
 module BasecampMcp
   module Tools
@@ -38,8 +38,8 @@ module BasecampMcp
 
     def self.all
       ObjectSpace.each_object(Class)
-        .select { |klass| klass < MCP::Tool && klass.name&.start_with?("BasecampMcp::Tools::") }
-        .sort_by(&:name)
+                 .select { |klass| klass < MCP::Tool && klass.name&.start_with?('BasecampMcp::Tools::') }
+                 .sort_by(&:name)
     end
   end
 end

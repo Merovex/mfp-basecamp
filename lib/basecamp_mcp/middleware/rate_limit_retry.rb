@@ -12,13 +12,11 @@ module BasecampMcp
         loop do
           response = @app.call(env)
 
-          if response.status == 429 && retries < MAX_RETRIES
-            wait = [(response.headers["Retry-After"] || 10).to_i, MAX_WAIT_SECONDS].min
-            sleep(wait)
-            retries += 1
-          else
-            return response
-          end
+          return response unless response.status == 429 && retries < MAX_RETRIES
+
+          wait = [(response.headers['Retry-After'] || 10).to_i, MAX_WAIT_SECONDS].min
+          sleep(wait)
+          retries += 1
         end
       end
     end

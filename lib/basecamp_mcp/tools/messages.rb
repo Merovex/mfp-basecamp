@@ -9,8 +9,8 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          message_board_id: { type: "integer", description: "The message board ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          message_board_id: { type: 'integer', description: 'The message board ID' }
         },
         required: %w[project_id message_board_id]
       )
@@ -20,9 +20,9 @@ module BasecampMcp
           messages = client(server_context:).get_all(
             "buckets/#{project_id}/message_boards/#{message_board_id}/messages"
           )
-          messages.each { |m| m["content"] = HtmlUtils.strip_for_ai(m["content"]) if m["content"] }
+          messages.each { |m| m['content'] = HtmlUtils.strip_for_ai(m['content']) if m['content'] }
           text_response(messages)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -31,12 +31,12 @@ module BasecampMcp
     class GetMessage < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific message by ID."
+      description 'Get a specific message by ID.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          message_id: { type: "integer", description: "The message ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          message_id: { type: 'integer', description: 'The message ID' }
         },
         required: %w[project_id message_id]
       )
@@ -44,9 +44,9 @@ module BasecampMcp
       class << self
         def call(project_id:, message_id:, server_context:)
           message = client(server_context:).get("buckets/#{project_id}/messages/#{message_id}")
-          message["content"] = HtmlUtils.strip_for_ai(message["content"]) if message["content"]
+          message['content'] = HtmlUtils.strip_for_ai(message['content']) if message['content']
           text_response(message)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -59,17 +59,17 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          message_board_id: { type: "integer", description: "The message board ID" },
-          subject: { type: "string", description: "Message subject/title" },
-          content: { type: "string", description: "Message body (supports HTML)" },
-          category_id: { type: "integer", description: "Message type/category ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          message_board_id: { type: 'integer', description: 'The message board ID' },
+          subject: { type: 'string', description: 'Message subject/title' },
+          content: { type: 'string', description: 'Message body (supports HTML)' },
+          category_id: { type: 'integer', description: 'Message type/category ID' }
         },
         required: %w[project_id message_board_id subject]
       )
 
       class << self
-        def call(project_id:, message_board_id:, subject:, content: nil, category_id: nil, server_context:)
+        def call(project_id:, message_board_id:, subject:, server_context:, content: nil, category_id: nil)
           body = { subject: subject }
           body[:content] = content if content
           body[:category_id] = category_id if category_id
@@ -77,7 +77,7 @@ module BasecampMcp
             "buckets/#{project_id}/message_boards/#{message_board_id}/messages", body
           )
           text_response(message)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -90,24 +90,24 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          message_id: { type: "integer", description: "The message ID" },
-          subject: { type: "string", description: "New subject" },
-          content: { type: "string", description: "New content (supports HTML)" },
-          category_id: { type: "integer", description: "New category ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          message_id: { type: 'integer', description: 'The message ID' },
+          subject: { type: 'string', description: 'New subject' },
+          content: { type: 'string', description: 'New content (supports HTML)' },
+          category_id: { type: 'integer', description: 'New category ID' }
         },
         required: %w[project_id message_id]
       )
 
       class << self
-        def call(project_id:, message_id:, subject: nil, content: nil, category_id: nil, server_context:)
+        def call(project_id:, message_id:, server_context:, subject: nil, content: nil, category_id: nil)
           body = {}
           body[:subject] = subject if subject
           body[:content] = content if content
           body[:category_id] = category_id if category_id
           message = client(server_context:).put("buckets/#{project_id}/messages/#{message_id}", body)
           text_response(message)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -116,12 +116,12 @@ module BasecampMcp
     class TrashMessage < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Move a message to the trash."
+      description 'Move a message to the trash.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          message_id: { type: "integer", description: "The message ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          message_id: { type: 'integer', description: 'The message ID' }
         },
         required: %w[project_id message_id]
       )
@@ -129,8 +129,8 @@ module BasecampMcp
       class << self
         def call(project_id:, message_id:, server_context:)
           client(server_context:).trash(project_id, message_id)
-          text_response({ status: "trashed", message_id: message_id })
-        rescue => e
+          text_response({ status: 'trashed', message_id: message_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -139,12 +139,12 @@ module BasecampMcp
     class PinMessage < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Pin a message so it appears at the top of the message board."
+      description 'Pin a message so it appears at the top of the message board.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          message_id: { type: "integer", description: "The message ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          message_id: { type: 'integer', description: 'The message ID' }
         },
         required: %w[project_id message_id]
       )
@@ -152,8 +152,8 @@ module BasecampMcp
       class << self
         def call(project_id:, message_id:, server_context:)
           client(server_context:).post("buckets/#{project_id}/recordings/#{message_id}/pin")
-          text_response({ status: "pinned", message_id: message_id })
-        rescue => e
+          text_response({ status: 'pinned', message_id: message_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -162,12 +162,12 @@ module BasecampMcp
     class UnpinMessage < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Unpin a message from the top of the message board."
+      description 'Unpin a message from the top of the message board.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          message_id: { type: "integer", description: "The message ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          message_id: { type: 'integer', description: 'The message ID' }
         },
         required: %w[project_id message_id]
       )
@@ -175,8 +175,8 @@ module BasecampMcp
       class << self
         def call(project_id:, message_id:, server_context:)
           client(server_context:).delete("buckets/#{project_id}/recordings/#{message_id}/pin")
-          text_response({ status: "unpinned", message_id: message_id })
-        rescue => e
+          text_response({ status: 'unpinned', message_id: message_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end

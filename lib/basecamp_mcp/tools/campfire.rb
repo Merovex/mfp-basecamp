@@ -5,12 +5,12 @@ module BasecampMcp
     class GetCampfire < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get the campfire (chat room) for a project."
+      description 'Get the campfire (chat room) for a project.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project ID" },
-          campfire_id: { type: "integer", description: "The campfire ID (from project dock, name: chat)" }
+          project_id: { type: 'integer', description: 'The project ID' },
+          campfire_id: { type: 'integer', description: 'The campfire ID (from project dock, name: chat)' }
         },
         required: %w[project_id campfire_id]
       )
@@ -19,7 +19,7 @@ module BasecampMcp
         def call(project_id:, campfire_id:, server_context:)
           campfire = client(server_context:).get("buckets/#{project_id}/chats/#{campfire_id}")
           text_response(campfire)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -28,12 +28,12 @@ module BasecampMcp
     class ListCampfireLines < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List chat lines in a campfire. Returns the most recent lines."
+      description 'List chat lines in a campfire. Returns the most recent lines.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          campfire_id: { type: "integer", description: "The campfire ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          campfire_id: { type: 'integer', description: 'The campfire ID' }
         },
         required: %w[project_id campfire_id]
       )
@@ -43,9 +43,9 @@ module BasecampMcp
           lines = client(server_context:).get_all(
             "buckets/#{project_id}/chats/#{campfire_id}/lines"
           )
-          lines.each { |l| l["content"] = HtmlUtils.strip_for_ai(l["content"]) if l["content"] }
+          lines.each { |l| l['content'] = HtmlUtils.strip_for_ai(l['content']) if l['content'] }
           text_response(lines)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -54,12 +54,12 @@ module BasecampMcp
     class GetCampfireLine < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific campfire chat line."
+      description 'Get a specific campfire chat line.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          line_id: { type: "integer", description: "The chat line ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          line_id: { type: 'integer', description: 'The chat line ID' }
         },
         required: %w[project_id line_id]
       )
@@ -67,9 +67,9 @@ module BasecampMcp
       class << self
         def call(project_id:, line_id:, server_context:)
           line = client(server_context:).get("buckets/#{project_id}/chats/lines/#{line_id}")
-          line["content"] = HtmlUtils.strip_for_ai(line["content"]) if line["content"]
+          line['content'] = HtmlUtils.strip_for_ai(line['content']) if line['content']
           text_response(line)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -78,13 +78,13 @@ module BasecampMcp
     class CreateCampfireLine < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Post a message to a campfire chat room."
+      description 'Post a message to a campfire chat room.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          campfire_id: { type: "integer", description: "The campfire ID" },
-          content: { type: "string", description: "Message content (supports HTML)" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          campfire_id: { type: 'integer', description: 'The campfire ID' },
+          content: { type: 'string', description: 'Message content (supports HTML)' }
         },
         required: %w[project_id campfire_id content]
       )
@@ -95,7 +95,7 @@ module BasecampMcp
             "buckets/#{project_id}/chats/#{campfire_id}/lines", { content: content }
           )
           text_response(line)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -104,12 +104,12 @@ module BasecampMcp
     class TrashCampfireLine < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Trash a campfire chat line."
+      description 'Trash a campfire chat line.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          line_id: { type: "integer", description: "The chat line ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          line_id: { type: 'integer', description: 'The chat line ID' }
         },
         required: %w[project_id line_id]
       )
@@ -117,8 +117,8 @@ module BasecampMcp
       class << self
         def call(project_id:, line_id:, server_context:)
           client(server_context:).trash(project_id, line_id)
-          text_response({ status: "trashed", line_id: line_id })
-        rescue => e
+          text_response({ status: 'trashed', line_id: line_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end

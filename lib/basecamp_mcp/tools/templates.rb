@@ -5,21 +5,21 @@ module BasecampMcp
     class ListTemplates < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all project templates."
+      description 'List all project templates.'
 
       input_schema(
         properties: {
-          status: { type: "string", enum: %w[active archived trashed], description: "Filter by status" }
+          status: { type: 'string', enum: %w[active archived trashed], description: 'Filter by status' }
         }
       )
 
       class << self
-        def call(status: nil, server_context:)
+        def call(server_context:, status: nil)
           params = {}
           params[:status] = status if status
-          templates = client(server_context:).get_all("templates", params)
+          templates = client(server_context:).get_all('templates', params)
           text_response(templates)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -28,20 +28,20 @@ module BasecampMcp
     class GetTemplate < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific project template."
+      description 'Get a specific project template.'
 
       input_schema(
         properties: {
-          template_id: { type: "integer", description: "The template ID" }
+          template_id: { type: 'integer', description: 'The template ID' }
         },
-        required: ["template_id"]
+        required: ['template_id']
       )
 
       class << self
         def call(template_id:, server_context:)
           template = client(server_context:).get("templates/#{template_id}")
           text_response(template)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -50,23 +50,23 @@ module BasecampMcp
     class CreateTemplate < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a new project template."
+      description 'Create a new project template.'
 
       input_schema(
         properties: {
-          name: { type: "string", description: "Template name" },
-          description: { type: "string", description: "Template description" }
+          name: { type: 'string', description: 'Template name' },
+          description: { type: 'string', description: 'Template description' }
         },
-        required: ["name"]
+        required: ['name']
       )
 
       class << self
-        def call(name:, description: nil, server_context:)
+        def call(name:, server_context:, description: nil)
           body = { name: name }
           body[:description] = description if description
-          template = client(server_context:).post("templates", body)
+          template = client(server_context:).post('templates', body)
           text_response(template)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -75,25 +75,25 @@ module BasecampMcp
     class UpdateTemplate < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Update a project template."
+      description 'Update a project template.'
 
       input_schema(
         properties: {
-          template_id: { type: "integer", description: "The template ID" },
-          name: { type: "string", description: "New template name" },
-          description: { type: "string", description: "New description" }
+          template_id: { type: 'integer', description: 'The template ID' },
+          name: { type: 'string', description: 'New template name' },
+          description: { type: 'string', description: 'New description' }
         },
-        required: ["template_id"]
+        required: ['template_id']
       )
 
       class << self
-        def call(template_id:, name: nil, description: nil, server_context:)
+        def call(template_id:, server_context:, name: nil, description: nil)
           body = {}
           body[:name] = name if name
           body[:description] = description if description
           template = client(server_context:).put("templates/#{template_id}", body)
           text_response(template)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -102,20 +102,20 @@ module BasecampMcp
     class TrashTemplate < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Trash a project template."
+      description 'Trash a project template.'
 
       input_schema(
         properties: {
-          template_id: { type: "integer", description: "The template ID" }
+          template_id: { type: 'integer', description: 'The template ID' }
         },
-        required: ["template_id"]
+        required: ['template_id']
       )
 
       class << self
         def call(template_id:, server_context:)
           client(server_context:).delete("templates/#{template_id}")
-          text_response({ status: "trashed", template_id: template_id })
-        rescue => e
+          text_response({ status: 'trashed', template_id: template_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end

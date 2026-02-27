@@ -10,16 +10,16 @@ module BasecampMcp
       )
 
       server = MCP::Server.new(
-        name: "basecamp-mcp",
+        name: 'basecamp-mcp',
         version: BasecampMcp::VERSION,
         tools: Tools.all,
         server_context: { client: client }
       )
 
       # STDIO transport uses $stdout for JSON-RPC; redirect $stderr to log file
-      log_path = File.join(TokenStore::CONFIG_DIR, "server.log")
+      log_path = File.join(TokenStore::CONFIG_DIR, 'server.log')
       FileUtils.mkdir_p(TokenStore::CONFIG_DIR)
-      $stderr.reopen(File.open(log_path, "a"))
+      $stderr.reopen(log_path, 'a')
 
       transport = MCP::Server::Transports::StdioTransport.new(server)
       transport.open

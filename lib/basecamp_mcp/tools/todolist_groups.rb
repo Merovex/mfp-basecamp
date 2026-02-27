@@ -5,12 +5,12 @@ module BasecampMcp
     class ListTodolistGroups < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all groups within a to-do list."
+      description 'List all groups within a to-do list.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          todolist_id: { type: "integer", description: "The to-do list ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          todolist_id: { type: 'integer', description: 'The to-do list ID' }
         },
         required: %w[project_id todolist_id]
       )
@@ -21,7 +21,7 @@ module BasecampMcp
             "buckets/#{project_id}/todolists/#{todolist_id}/groups"
           )
           text_response(groups)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -30,12 +30,12 @@ module BasecampMcp
     class GetTodolistGroup < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific to-do list group."
+      description 'Get a specific to-do list group.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          group_id: { type: "integer", description: "The group ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          group_id: { type: 'integer', description: 'The group ID' }
         },
         required: %w[project_id group_id]
       )
@@ -44,7 +44,7 @@ module BasecampMcp
         def call(project_id:, group_id:, server_context:)
           group = client(server_context:).get("buckets/#{project_id}/todolists/#{group_id}")
           text_response(group)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -53,13 +53,13 @@ module BasecampMcp
     class CreateTodolistGroup < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a new group within a to-do list."
+      description 'Create a new group within a to-do list.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          todolist_id: { type: "integer", description: "The to-do list ID" },
-          name: { type: "string", description: "Group name" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          todolist_id: { type: 'integer', description: 'The to-do list ID' },
+          name: { type: 'string', description: 'Group name' }
         },
         required: %w[project_id todolist_id name]
       )
@@ -70,7 +70,7 @@ module BasecampMcp
             "buckets/#{project_id}/todolists/#{todolist_id}/groups", { name: name }
           )
           text_response(group)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -83,9 +83,9 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          group_id: { type: "integer", description: "The group ID" },
-          position: { type: "integer", description: "New position (1-based)" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          group_id: { type: 'integer', description: 'The group ID' },
+          position: { type: 'integer', description: 'New position (1-based)' }
         },
         required: %w[project_id group_id position]
       )
@@ -95,8 +95,8 @@ module BasecampMcp
           client(server_context:).put(
             "buckets/#{project_id}/todolists/#{group_id}/position", { position: position }
           )
-          text_response({ status: "repositioned", group_id: group_id, position: position })
-        rescue => e
+          text_response({ status: 'repositioned', group_id: group_id, position: position })
+        rescue StandardError => e
           error_response(e.message)
         end
       end

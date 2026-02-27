@@ -5,15 +5,15 @@ module BasecampMcp
     class ListPeople < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all people on the Basecamp account."
+      description 'List all people on the Basecamp account.'
 
       input_schema(properties: {})
 
       class << self
         def call(server_context:)
-          people = client(server_context:).get_all("people")
+          people = client(server_context:).get_all('people')
           text_response(people)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -26,16 +26,16 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          person_id: { type: "integer", description: "The person's ID" }
+          person_id: { type: 'integer', description: "The person's ID" }
         },
-        required: ["person_id"]
+        required: ['person_id']
       )
 
       class << self
         def call(person_id:, server_context:)
           person = client(server_context:).get("people/#{person_id}")
           text_response(person)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -50,9 +50,9 @@ module BasecampMcp
 
       class << self
         def call(server_context:)
-          profile = client(server_context:).get("my/profile")
+          profile = client(server_context:).get('my/profile')
           text_response(profile)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -61,15 +61,15 @@ module BasecampMcp
     class ListPingablePeople < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all people who can be pinged on the account."
+      description 'List all people who can be pinged on the account.'
 
       input_schema(properties: {})
 
       class << self
         def call(server_context:)
-          people = client(server_context:).get_all("circles/people")
+          people = client(server_context:).get_all('circles/people')
           text_response(people)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end

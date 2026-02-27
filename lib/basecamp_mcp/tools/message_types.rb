@@ -5,20 +5,20 @@ module BasecampMcp
     class ListMessageTypes < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all message categories/types for a project."
+      description 'List all message categories/types for a project.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' }
         },
-        required: ["project_id"]
+        required: ['project_id']
       )
 
       class << self
         def call(project_id:, server_context:)
           types = client(server_context:).get_all("buckets/#{project_id}/categories")
           text_response(types)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -27,12 +27,12 @@ module BasecampMcp
     class GetMessageType < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Get a specific message category/type."
+      description 'Get a specific message category/type.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          category_id: { type: "integer", description: "The category ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          category_id: { type: 'integer', description: 'The category ID' }
         },
         required: %w[project_id category_id]
       )
@@ -41,7 +41,7 @@ module BasecampMcp
         def call(project_id:, category_id:, server_context:)
           type = client(server_context:).get("buckets/#{project_id}/categories/#{category_id}")
           text_response(type)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -50,24 +50,24 @@ module BasecampMcp
     class CreateMessageType < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a new message category/type for a project."
+      description 'Create a new message category/type for a project.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          name: { type: "string", description: "Category name" },
-          icon: { type: "string", description: "Emoji icon for the category" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          name: { type: 'string', description: 'Category name' },
+          icon: { type: 'string', description: 'Emoji icon for the category' }
         },
         required: %w[project_id name]
       )
 
       class << self
-        def call(project_id:, name:, icon: nil, server_context:)
+        def call(project_id:, name:, server_context:, icon: nil)
           body = { name: name }
           body[:icon] = icon if icon
           type = client(server_context:).post("buckets/#{project_id}/categories", body)
           text_response(type)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -80,22 +80,22 @@ module BasecampMcp
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          category_id: { type: "integer", description: "The category ID" },
-          name: { type: "string", description: "New category name" },
-          icon: { type: "string", description: "New emoji icon" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          category_id: { type: 'integer', description: 'The category ID' },
+          name: { type: 'string', description: 'New category name' },
+          icon: { type: 'string', description: 'New emoji icon' }
         },
         required: %w[project_id category_id]
       )
 
       class << self
-        def call(project_id:, category_id:, name: nil, icon: nil, server_context:)
+        def call(project_id:, category_id:, server_context:, name: nil, icon: nil)
           body = {}
           body[:name] = name if name
           body[:icon] = icon if icon
           type = client(server_context:).put("buckets/#{project_id}/categories/#{category_id}", body)
           text_response(type)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -104,12 +104,12 @@ module BasecampMcp
     class TrashMessageType < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Trash a message category/type."
+      description 'Trash a message category/type.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          category_id: { type: "integer", description: "The category ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          category_id: { type: 'integer', description: 'The category ID' }
         },
         required: %w[project_id category_id]
       )
@@ -117,8 +117,8 @@ module BasecampMcp
       class << self
         def call(project_id:, category_id:, server_context:)
           client(server_context:).delete("buckets/#{project_id}/categories/#{category_id}")
-          text_response({ status: "trashed", category_id: category_id })
-        rescue => e
+          text_response({ status: 'trashed', category_id: category_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end

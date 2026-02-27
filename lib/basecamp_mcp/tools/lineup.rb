@@ -5,20 +5,20 @@ module BasecampMcp
     class ListLineupMarkers < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all lineup markers in a project."
+      description 'List all lineup markers in a project.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' }
         },
-        required: ["project_id"]
+        required: ['project_id']
       )
 
       class << self
         def call(project_id:, server_context:)
           markers = client(server_context:).get_all("buckets/#{project_id}/lineup_markers")
           text_response(markers)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -27,25 +27,25 @@ module BasecampMcp
     class CreateLineupMarker < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a lineup marker in a project."
+      description 'Create a lineup marker in a project.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          starts_on: { type: "string", description: "Start date (YYYY-MM-DD)" },
-          ends_on: { type: "string", description: "End date (YYYY-MM-DD)" },
-          color: { type: "string", description: "Marker color" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          starts_on: { type: 'string', description: 'Start date (YYYY-MM-DD)' },
+          ends_on: { type: 'string', description: 'End date (YYYY-MM-DD)' },
+          color: { type: 'string', description: 'Marker color' }
         },
         required: %w[project_id starts_on ends_on]
       )
 
       class << self
-        def call(project_id:, starts_on:, ends_on:, color: nil, server_context:)
+        def call(project_id:, starts_on:, ends_on:, server_context:, color: nil)
           body = { starts_on: starts_on, ends_on: ends_on }
           body[:color] = color if color
           marker = client(server_context:).post("buckets/#{project_id}/lineup_markers", body)
           text_response(marker)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -54,28 +54,28 @@ module BasecampMcp
     class UpdateLineupMarker < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Update a lineup marker."
+      description 'Update a lineup marker.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          marker_id: { type: "integer", description: "The marker ID" },
-          starts_on: { type: "string", description: "New start date (YYYY-MM-DD)" },
-          ends_on: { type: "string", description: "New end date (YYYY-MM-DD)" },
-          color: { type: "string", description: "New marker color" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          marker_id: { type: 'integer', description: 'The marker ID' },
+          starts_on: { type: 'string', description: 'New start date (YYYY-MM-DD)' },
+          ends_on: { type: 'string', description: 'New end date (YYYY-MM-DD)' },
+          color: { type: 'string', description: 'New marker color' }
         },
         required: %w[project_id marker_id]
       )
 
       class << self
-        def call(project_id:, marker_id:, starts_on: nil, ends_on: nil, color: nil, server_context:)
+        def call(project_id:, marker_id:, server_context:, starts_on: nil, ends_on: nil, color: nil)
           body = {}
           body[:starts_on] = starts_on if starts_on
           body[:ends_on] = ends_on if ends_on
           body[:color] = color if color
           marker = client(server_context:).put("buckets/#{project_id}/lineup_markers/#{marker_id}", body)
           text_response(marker)
-        rescue => e
+        rescue StandardError => e
           error_response(e.message)
         end
       end
@@ -84,12 +84,12 @@ module BasecampMcp
     class TrashLineupMarker < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Trash a lineup marker."
+      description 'Trash a lineup marker.'
 
       input_schema(
         properties: {
-          project_id: { type: "integer", description: "The project (bucket) ID" },
-          marker_id: { type: "integer", description: "The marker ID" }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          marker_id: { type: 'integer', description: 'The marker ID' }
         },
         required: %w[project_id marker_id]
       )
@@ -97,8 +97,8 @@ module BasecampMcp
       class << self
         def call(project_id:, marker_id:, server_context:)
           client(server_context:).trash(project_id, marker_id)
-          text_response({ status: "trashed", marker_id: marker_id })
-        rescue => e
+          text_response({ status: 'trashed', marker_id: marker_id })
+        rescue StandardError => e
           error_response(e.message)
         end
       end

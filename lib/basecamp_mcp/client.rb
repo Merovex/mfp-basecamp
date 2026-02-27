@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-require "faraday"
+require 'faraday'
 
 module BasecampMcp
   class Client
-    DEFAULT_USER_AGENT = "BasecampMCP (basecamp-mcp@example.com)"
+    DEFAULT_USER_AGENT = 'BasecampMCP (basecamp-mcp@example.com)'
 
     attr_reader :account_id
 
     def initialize(account_id:, token_store:, base_url: nil)
       @account_id = account_id
       @token_store = token_store
-      @base_url = base_url || ENV["BASECAMP_BASE_URL"] || "https://3.basecampapi.com"
+      @base_url = base_url || ENV['BASECAMP_BASE_URL'] || 'https://3.basecampapi.com'
       @user_agent = token_store.user_agent || DEFAULT_USER_AGENT
       @connection = build_connection
     end
@@ -31,7 +31,7 @@ module BasecampMcp
         raise_on_error!(response)
         results.concat(Array(response.body))
 
-        next_url = extract_next_link(response.headers["link"])
+        next_url = extract_next_link(response.headers['link'])
         break unless next_url
 
         url = next_url
@@ -79,9 +79,9 @@ module BasecampMcp
         f.response :json, content_type: /\bjson$/
         f.use BasecampMcp::Middleware::TokenRefresh, token_store: @token_store
         f.use BasecampMcp::Middleware::RateLimitRetry
-        f.headers["User-Agent"] = @user_agent
-        f.headers["Content-Type"] = "application/json; charset=utf-8"
-        f.request :authorization, "Bearer", -> { @token_store.access_token }
+        f.headers['User-Agent'] = @user_agent
+        f.headers['Content-Type'] = 'application/json; charset=utf-8'
+        f.request :authorization, 'Bearer', -> { @token_store.access_token }
         f.adapter Faraday.default_adapter
       end
     end
