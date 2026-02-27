@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "uri"
+
 module BasecampMcp
   module Tools
     class ListWebhooks < MCP::Tool
@@ -50,12 +52,12 @@ module BasecampMcp
     class CreateWebhook < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Create a new webhook for a project."
+      description "Create a new webhook for a project. CAUTION: The payload_url will receive Basecamp event data — only use trusted, verified URLs."
 
       input_schema(
         properties: {
           project_id: { type: "integer", description: "The project (bucket) ID" },
-          payload_url: { type: "string", description: "URL to receive webhook payloads" },
+          payload_url: { type: "string", format: "uri", description: "HTTPS URL to receive webhook payloads. Must be a trusted endpoint." },
           types: { type: "array", items: { type: "string" }, description: "Event types to subscribe to (e.g., Todo, Message)" }
         },
         required: %w[project_id payload_url]
@@ -63,6 +65,11 @@ module BasecampMcp
 
       class << self
         def call(project_id:, payload_url:, types: nil, server_context:)
+          uri = URI.parse(payload_url)
+          unless uri.is_a?(URI::HTTPS)
+            return error_response("payload_url must be an HTTPS URL")
+          end
+
           body = { payload_url: payload_url }
           body[:types] = types if types
           hook = client(server_context:).post("buckets/#{project_id}/webhooks", body)
@@ -76,13 +83,13 @@ module BasecampMcp
     class UpdateWebhook < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "Update a webhook's payload URL or event types."
+      description "Update a webhook's payload URL or event types. CAUTION: The payload_url will receive Basecamp event data — only use trusted, verified URLs."
 
       input_schema(
         properties: {
           project_id: { type: "integer", description: "The project (bucket) ID" },
           webhook_id: { type: "integer", description: "The webhook ID" },
-          payload_url: { type: "string", description: "New payload URL" },
+          payload_url: { type: "string", format: "uri", description: "HTTPS URL to receive webhook payloads. Must be a trusted endpoint." },
           types: { type: "array", items: { type: "string" }, description: "New event types" }
         },
         required: %w[project_id webhook_id]
@@ -90,6 +97,13 @@ module BasecampMcp
 
       class << self
         def call(project_id:, webhook_id:, payload_url: nil, types: nil, server_context:)
+          if payload_url
+            uri = URI.parse(payload_url)
+            unless uri.is_a?(URI::HTTPS)
+              return error_response("payload_url must be an HTTPS URL")
+            end
+          end
+
           body = {}
           body[:payload_url] = payload_url if payload_url
           body[:types] = types if types
