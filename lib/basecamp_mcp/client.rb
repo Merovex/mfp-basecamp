@@ -41,6 +41,18 @@ module BasecampMcp
       results
     end
 
+    def get_page(path, params = {}, page: 1)
+      params = params.dup
+      params[:page] = page if page > 1
+
+      response = @connection.get(api_path(path), params)
+      raise_on_error!(response)
+
+      items = Array(response.body)
+      has_more = extract_next_link(response.headers['link']) ? true : false
+      [items, has_more]
+    end
+
     def post(path, body = {})
       response = @connection.post(api_path(path)) do |req|
         req.body = body.to_json unless body.empty?

@@ -28,23 +28,24 @@ module BasecampMcp
     class ListCampfireLines < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List chat lines in a campfire. Returns the most recent lines.'
+      description 'List chat lines in a campfire (paginated). Returns the most recent lines.'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          campfire_id: { type: 'integer', description: 'The campfire ID' }
+          campfire_id: { type: 'integer', description: 'The campfire ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id campfire_id]
       )
 
       class << self
-        def call(project_id:, campfire_id:, server_context:)
-          lines = client(server_context:).get_all(
-            "buckets/#{project_id}/chats/#{campfire_id}/lines"
+        def call(project_id:, campfire_id:, server_context:, page: 1)
+          lines, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/chats/#{campfire_id}/lines", {}, page: page
           )
           lines.each { |l| l['content'] = HtmlUtils.strip_for_ai(l['content']) if l['content'] }
-          text_response(lines)
+          paginated_list_response(lines, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

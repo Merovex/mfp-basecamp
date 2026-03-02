@@ -7,19 +7,22 @@ module BasecampMcp
     class ListWebhooks < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all webhooks for a project.'
+      description 'List webhooks for a project (paginated).'
 
       input_schema(
         properties: {
-          project_id: { type: 'integer', description: 'The project (bucket) ID' }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: ['project_id']
       )
 
       class << self
-        def call(project_id:, server_context:)
-          hooks = client(server_context:).get_all("buckets/#{project_id}/webhooks")
-          text_response(hooks)
+        def call(project_id:, server_context:, page: 1)
+          hooks, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/webhooks", {}, page: page
+          )
+          paginated_list_response(hooks, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

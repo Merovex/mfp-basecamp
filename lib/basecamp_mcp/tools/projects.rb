@@ -5,21 +5,22 @@ module BasecampMcp
     class ListProjects < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all projects. Supports filtering by status (active, archived, trashed).'
+      description 'List projects (paginated). Supports filtering by status (active, archived, trashed).'
 
       input_schema(
         properties: {
           status: { type: 'string', enum: %w[active archived trashed],
-                    description: 'Filter by status. Default: active' }
+                    description: 'Filter by status. Default: active' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         }
       )
 
       class << self
-        def call(server_context:, status: nil)
+        def call(server_context:, status: nil, page: 1)
           params = {}
           params[:status] = status if status
-          projects = client(server_context:).get_all('projects', params)
-          text_response(projects)
+          projects, has_more = client(server_context:).get_page('projects', params, page: page)
+          paginated_list_response(projects, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

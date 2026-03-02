@@ -5,23 +5,24 @@ module BasecampMcp
     class ListMessages < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all messages in a project's message board."
+      description "List messages in a project's message board (paginated)."
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          message_board_id: { type: 'integer', description: 'The message board ID' }
+          message_board_id: { type: 'integer', description: 'The message board ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id message_board_id]
       )
 
       class << self
-        def call(project_id:, message_board_id:, server_context:)
-          messages = client(server_context:).get_all(
-            "buckets/#{project_id}/message_boards/#{message_board_id}/messages"
+        def call(project_id:, message_board_id:, server_context:, page: 1)
+          messages, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/message_boards/#{message_board_id}/messages", {}, page: page
           )
           messages.each { |m| m['content'] = HtmlUtils.strip_for_ai(m['content']) if m['content'] }
-          text_response(messages)
+          paginated_list_response(messages, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

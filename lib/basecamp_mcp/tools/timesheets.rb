@@ -28,22 +28,23 @@ module BasecampMcp
     class ListTimeEntries < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all time entries in a project's timesheet."
+      description "List time entries in a project's timesheet (paginated)."
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          timesheet_id: { type: 'integer', description: 'The timesheet ID' }
+          timesheet_id: { type: 'integer', description: 'The timesheet ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id timesheet_id]
       )
 
       class << self
-        def call(project_id:, timesheet_id:, server_context:)
-          entries = client(server_context:).get_all(
-            "buckets/#{project_id}/timesheets/#{timesheet_id}/entries"
+        def call(project_id:, timesheet_id:, server_context:, page: 1)
+          entries, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/timesheets/#{timesheet_id}/entries", {}, page: page
           )
-          text_response(entries)
+          paginated_list_response(entries, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

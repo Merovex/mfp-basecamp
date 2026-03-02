@@ -28,23 +28,24 @@ module BasecampMcp
     class ListInboxForwards < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List forwarded emails in a project's inbox."
+      description "List forwarded emails in a project's inbox (paginated)."
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          inbox_id: { type: 'integer', description: 'The inbox ID' }
+          inbox_id: { type: 'integer', description: 'The inbox ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id inbox_id]
       )
 
       class << self
-        def call(project_id:, inbox_id:, server_context:)
-          forwards = client(server_context:).get_all(
-            "buckets/#{project_id}/inboxes/#{inbox_id}/forwards"
+        def call(project_id:, inbox_id:, server_context:, page: 1)
+          forwards, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/inboxes/#{inbox_id}/forwards", {}, page: page
           )
           forwards.each { |f| f['content'] = HtmlUtils.strip_for_ai(f['content']) if f['content'] }
-          text_response(forwards)
+          paginated_list_response(forwards, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
@@ -78,23 +79,24 @@ module BasecampMcp
     class ListInboxReplies < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List replies to a forwarded email.'
+      description 'List replies to a forwarded email (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          forward_id: { type: 'integer', description: 'The forwarded email ID' }
+          forward_id: { type: 'integer', description: 'The forwarded email ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id forward_id]
       )
 
       class << self
-        def call(project_id:, forward_id:, server_context:)
-          replies = client(server_context:).get_all(
-            "buckets/#{project_id}/inbox_forwards/#{forward_id}/replies"
+        def call(project_id:, forward_id:, server_context:, page: 1)
+          replies, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/inbox_forwards/#{forward_id}/replies", {}, page: page
           )
           replies.each { |r| r['content'] = HtmlUtils.strip_for_ai(r['content']) if r['content'] }
-          text_response(replies)
+          paginated_list_response(replies, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

@@ -5,19 +5,22 @@ module BasecampMcp
     class ListMessageTypes < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all message categories/types for a project.'
+      description 'List message categories/types for a project (paginated).'
 
       input_schema(
         properties: {
-          project_id: { type: 'integer', description: 'The project (bucket) ID' }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: ['project_id']
       )
 
       class << self
-        def call(project_id:, server_context:)
-          types = client(server_context:).get_all("buckets/#{project_id}/categories")
-          text_response(types)
+        def call(project_id:, server_context:, page: 1)
+          types, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/categories", {}, page: page
+          )
+          paginated_list_response(types, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

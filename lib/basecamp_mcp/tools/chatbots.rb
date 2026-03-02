@@ -5,22 +5,23 @@ module BasecampMcp
     class ListChatbots < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all chatbots configured for a campfire.'
+      description 'List chatbots configured for a campfire (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          campfire_id: { type: 'integer', description: 'The campfire ID' }
+          campfire_id: { type: 'integer', description: 'The campfire ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id campfire_id]
       )
 
       class << self
-        def call(project_id:, campfire_id:, server_context:)
-          bots = client(server_context:).get_all(
-            "buckets/#{project_id}/chats/#{campfire_id}/integrations"
+        def call(project_id:, campfire_id:, server_context:, page: 1)
+          bots, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/chats/#{campfire_id}/integrations", {}, page: page
           )
-          text_response(bots)
+          paginated_list_response(bots, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

@@ -5,26 +5,27 @@ module BasecampMcp
     class ListTodolists < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all to-do lists in a project's to-do set."
+      description "List to-do lists in a project's to-do set (paginated)."
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
           todoset_id: { type: 'integer', description: 'The to-do set ID' },
           status: { type: 'string', enum: %w[active archived trashed],
-                    description: 'Filter by status. Default: active' }
+                    description: 'Filter by status. Default: active' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id todoset_id]
       )
 
       class << self
-        def call(project_id:, todoset_id:, server_context:, status: nil)
+        def call(project_id:, todoset_id:, server_context:, status: nil, page: 1)
           params = {}
           params[:status] = status if status
-          lists = client(server_context:).get_all(
-            "buckets/#{project_id}/todosets/#{todoset_id}/todolists", params
+          lists, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/todosets/#{todoset_id}/todolists", params, page: page
           )
-          text_response(lists)
+          paginated_list_response(lists, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

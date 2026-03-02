@@ -5,7 +5,7 @@ module BasecampMcp
     class ListTodos < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all to-dos in a to-do list. Supports filtering by completion status.'
+      description 'List to-dos in a to-do list (paginated). Supports filtering by completion status.'
 
       input_schema(
         properties: {
@@ -13,21 +13,22 @@ module BasecampMcp
           todolist_id: { type: 'integer', description: 'The to-do list ID' },
           completed: { type: 'boolean', description: 'Filter: true=completed, false=incomplete. Omit for all.' },
           status: { type: 'string', enum: %w[active archived trashed],
-                    description: 'Filter by status. Default: active' }
+                    description: 'Filter by status. Default: active' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id todolist_id]
       )
 
       class << self
-        def call(project_id:, todolist_id:, server_context:, completed: nil, status: nil)
+        def call(project_id:, todolist_id:, server_context:, completed: nil, status: nil, page: 1)
           params = {}
           params[:completed] = completed unless completed.nil?
           params[:status] = status if status
-          todos = client(server_context:).get_all(
-            "buckets/#{project_id}/todolists/#{todolist_id}/todos", params
+          todos, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/todolists/#{todolist_id}/todos", params, page: page
           )
           todos.each { |t| t['description'] = HtmlUtils.strip_for_ai(t['description']) if t['description'] }
-          text_response(todos)
+          paginated_list_response(todos, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

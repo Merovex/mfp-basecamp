@@ -28,22 +28,23 @@ module BasecampMcp
     class ListCardTableColumns < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all columns in a card table.'
+      description 'List columns in a card table (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          card_table_id: { type: 'integer', description: 'The card table ID' }
+          card_table_id: { type: 'integer', description: 'The card table ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id card_table_id]
       )
 
       class << self
-        def call(project_id:, card_table_id:, server_context:)
-          columns = client(server_context:).get_all(
-            "buckets/#{project_id}/card_tables/#{card_table_id}/columns"
+        def call(project_id:, card_table_id:, server_context:, page: 1)
+          columns, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/card_tables/#{card_table_id}/columns", {}, page: page
           )
-          text_response(columns)
+          paginated_list_response(columns, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
@@ -151,22 +152,23 @@ module BasecampMcp
     class ListCards < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all cards in a card table column.'
+      description 'List cards in a card table column (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          column_id: { type: 'integer', description: 'The column ID' }
+          column_id: { type: 'integer', description: 'The column ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id column_id]
       )
 
       class << self
-        def call(project_id:, column_id:, server_context:)
-          cards = client(server_context:).get_all(
-            "buckets/#{project_id}/card_tables/columns/#{column_id}/cards"
+        def call(project_id:, column_id:, server_context:, page: 1)
+          cards, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/card_tables/columns/#{column_id}/cards", {}, page: page
           )
-          text_response(cards)
+          paginated_list_response(cards, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
@@ -314,22 +316,23 @@ module BasecampMcp
     class ListCardSteps < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all steps (checklist items) on a card.'
+      description 'List steps (checklist items) on a card (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          card_id: { type: 'integer', description: 'The card ID' }
+          card_id: { type: 'integer', description: 'The card ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id card_id]
       )
 
       class << self
-        def call(project_id:, card_id:, server_context:)
-          steps = client(server_context:).get_all(
-            "buckets/#{project_id}/card_tables/cards/#{card_id}/steps"
+        def call(project_id:, card_id:, server_context:, page: 1)
+          steps, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/card_tables/cards/#{card_id}/steps", {}, page: page
           )
-          text_response(steps)
+          paginated_list_response(steps, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

@@ -5,7 +5,7 @@ module BasecampMcp
     class ListRecordings < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'Search and filter recordings across projects. Can filter by type, bucket, sort, and status.'
+      description 'Search and filter recordings across projects (paginated). Can filter by type, bucket, sort, and status.'
 
       input_schema(
         properties: {
@@ -14,20 +14,21 @@ module BasecampMcp
           bucket: { type: 'integer', description: 'Filter by project (bucket) ID' },
           sort: { type: 'string', enum: %w[created_at updated_at], description: 'Sort field' },
           direction: { type: 'string', enum: %w[asc desc], description: 'Sort direction' },
-          status: { type: 'string', enum: %w[active archived trashed], description: 'Filter by status' }
+          status: { type: 'string', enum: %w[active archived trashed], description: 'Filter by status' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: ['type']
       )
 
       class << self
-        def call(type:, server_context:, bucket: nil, sort: nil, direction: nil, status: nil)
+        def call(type:, server_context:, bucket: nil, sort: nil, direction: nil, status: nil, page: 1)
           params = { type: type }
           params[:bucket] = bucket if bucket
           params[:sort] = sort if sort
           params[:direction] = direction if direction
           params[:status] = status if status
-          recordings = client(server_context:).get_all('projects/recordings', params)
-          text_response(recordings)
+          recordings, has_more = client(server_context:).get_page('projects/recordings', params, page: page)
+          paginated_list_response(recordings, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

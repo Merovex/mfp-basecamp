@@ -5,20 +5,23 @@ module BasecampMcp
     class ListVaults < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all vaults (folders) in a project or nested inside another vault.'
+      description 'List vaults (folders) in a project or nested inside another vault (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          vault_id: { type: 'integer', description: 'The parent vault ID (from project dock)' }
+          vault_id: { type: 'integer', description: 'The parent vault ID (from project dock)' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id vault_id]
       )
 
       class << self
-        def call(project_id:, vault_id:, server_context:)
-          vaults = client(server_context:).get_all("buckets/#{project_id}/vaults/#{vault_id}/vaults")
-          text_response(vaults)
+        def call(project_id:, vault_id:, server_context:, page: 1)
+          vaults, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/vaults/#{vault_id}/vaults", {}, page: page
+          )
+          paginated_list_response(vaults, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

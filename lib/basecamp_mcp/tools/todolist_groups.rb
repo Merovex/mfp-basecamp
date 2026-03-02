@@ -5,22 +5,23 @@ module BasecampMcp
     class ListTodolistGroups < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all groups within a to-do list.'
+      description 'List groups within a to-do list (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          todolist_id: { type: 'integer', description: 'The to-do list ID' }
+          todolist_id: { type: 'integer', description: 'The to-do list ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id todolist_id]
       )
 
       class << self
-        def call(project_id:, todolist_id:, server_context:)
-          groups = client(server_context:).get_all(
-            "buckets/#{project_id}/todolists/#{todolist_id}/groups"
+        def call(project_id:, todolist_id:, server_context:, page: 1)
+          groups, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/todolists/#{todolist_id}/groups", {}, page: page
           )
-          text_response(groups)
+          paginated_list_response(groups, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

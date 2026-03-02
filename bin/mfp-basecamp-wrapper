@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/Users/merovex/.local/share/mise/installs/ruby/3.4.4/bin:/Users/merovex/.local/bin:$PATH"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR/.."
 exec bundle exec ruby bin/basecamp-mcp "$@"

@@ -28,26 +28,27 @@ module BasecampMcp
     class ListScheduleEntries < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description "List all entries in a project's schedule."
+      description "List entries in a project's schedule (paginated)."
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
           schedule_id: { type: 'integer', description: 'The schedule ID' },
-          status: { type: 'string', enum: %w[active archived trashed], description: 'Filter by status' }
+          status: { type: 'string', enum: %w[active archived trashed], description: 'Filter by status' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id schedule_id]
       )
 
       class << self
-        def call(project_id:, schedule_id:, server_context:, status: nil)
+        def call(project_id:, schedule_id:, server_context:, status: nil, page: 1)
           params = {}
           params[:status] = status if status
-          entries = client(server_context:).get_all(
-            "buckets/#{project_id}/schedules/#{schedule_id}/entries", params
+          entries, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/schedules/#{schedule_id}/entries", params, page: page
           )
           entries.each { |e| e['description'] = HtmlUtils.strip_for_ai(e['description']) if e['description'] }
-          text_response(entries)
+          paginated_list_response(entries, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

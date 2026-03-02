@@ -5,20 +5,23 @@ module BasecampMcp
     class ListUploads < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all uploads (files) in a vault.'
+      description 'List uploads (files) in a vault (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          vault_id: { type: 'integer', description: 'The vault ID' }
+          vault_id: { type: 'integer', description: 'The vault ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id vault_id]
       )
 
       class << self
-        def call(project_id:, vault_id:, server_context:)
-          uploads = client(server_context:).get_all("buckets/#{project_id}/vaults/#{vault_id}/uploads")
-          text_response(uploads)
+        def call(project_id:, vault_id:, server_context:, page: 1)
+          uploads, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/vaults/#{vault_id}/uploads", {}, page: page
+          )
+          paginated_list_response(uploads, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

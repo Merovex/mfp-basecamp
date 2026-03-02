@@ -5,23 +5,24 @@ module BasecampMcp
     class ListComments < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all comments on any Basecamp recording (message, to-do, document, etc.).'
+      description 'List comments on any Basecamp recording (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          recording_id: { type: 'integer', description: 'The recording ID (message, to-do, etc.)' }
+          recording_id: { type: 'integer', description: 'The recording ID (message, to-do, etc.)' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id recording_id]
       )
 
       class << self
-        def call(project_id:, recording_id:, server_context:)
-          comments = client(server_context:).get_all(
-            "buckets/#{project_id}/recordings/#{recording_id}/comments"
+        def call(project_id:, recording_id:, server_context:, page: 1)
+          comments, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/recordings/#{recording_id}/comments", {}, page: page
           )
           comments.each { |c| c['content'] = HtmlUtils.strip_for_ai(c['content']) if c['content'] }
-          text_response(comments)
+          paginated_list_response(comments, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

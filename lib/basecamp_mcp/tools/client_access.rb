@@ -5,21 +5,22 @@ module BasecampMcp
     class ListClientVisibleRecordings < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all client-visible items in a project.'
+      description 'List client-visible items in a project (paginated).'
 
       input_schema(
         properties: {
-          project_id: { type: 'integer', description: 'The project (bucket) ID' }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: ['project_id']
       )
 
       class << self
-        def call(project_id:, server_context:)
-          recordings = client(server_context:).get_all(
-            "buckets/#{project_id}/client/recordings"
+        def call(project_id:, server_context:, page: 1)
+          recordings, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/client/recordings", {}, page: page
           )
-          text_response(recordings)
+          paginated_list_response(recordings, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
@@ -86,22 +87,23 @@ module BasecampMcp
     class ListClientApprovalResponses < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List responses to a client approval.'
+      description 'List responses to a client approval (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          approval_id: { type: 'integer', description: 'The client approval ID' }
+          approval_id: { type: 'integer', description: 'The client approval ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id approval_id]
       )
 
       class << self
-        def call(project_id:, approval_id:, server_context:)
-          responses = client(server_context:).get_all(
-            "buckets/#{project_id}/client/approvals/#{approval_id}/responses"
+        def call(project_id:, approval_id:, server_context:, page: 1)
+          responses, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/client/approvals/#{approval_id}/responses", {}, page: page
           )
-          text_response(responses)
+          paginated_list_response(responses, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
@@ -111,22 +113,23 @@ module BasecampMcp
     class ListClientCorrespondences < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all client correspondences in a project.'
+      description 'List client correspondences in a project (paginated).'
 
       input_schema(
         properties: {
-          project_id: { type: 'integer', description: 'The project (bucket) ID' }
+          project_id: { type: 'integer', description: 'The project (bucket) ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: ['project_id']
       )
 
       class << self
-        def call(project_id:, server_context:)
-          correspondences = client(server_context:).get_all(
-            "buckets/#{project_id}/client/correspondences"
+        def call(project_id:, server_context:, page: 1)
+          correspondences, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/client/correspondences", {}, page: page
           )
           correspondences.each { |c| c['content'] = HtmlUtils.strip_for_ai(c['content']) if c['content'] }
-          text_response(correspondences)
+          paginated_list_response(correspondences, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
@@ -189,23 +192,24 @@ module BasecampMcp
     class ListClientReplies < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List replies to a client correspondence.'
+      description 'List replies to a client correspondence (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          correspondence_id: { type: 'integer', description: 'The correspondence ID' }
+          correspondence_id: { type: 'integer', description: 'The correspondence ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id correspondence_id]
       )
 
       class << self
-        def call(project_id:, correspondence_id:, server_context:)
-          replies = client(server_context:).get_all(
-            "buckets/#{project_id}/client/correspondences/#{correspondence_id}/replies"
+        def call(project_id:, correspondence_id:, server_context:, page: 1)
+          replies, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/client/correspondences/#{correspondence_id}/replies", {}, page: page
           )
           replies.each { |r| r['content'] = HtmlUtils.strip_for_ai(r['content']) if r['content'] }
-          text_response(replies)
+          paginated_list_response(replies, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

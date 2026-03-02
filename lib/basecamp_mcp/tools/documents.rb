@@ -5,21 +5,24 @@ module BasecampMcp
     class ListDocuments < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all documents in a vault (folder).'
+      description 'List documents in a vault (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          vault_id: { type: 'integer', description: 'The vault ID' }
+          vault_id: { type: 'integer', description: 'The vault ID' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: %w[project_id vault_id]
       )
 
       class << self
-        def call(project_id:, vault_id:, server_context:)
-          docs = client(server_context:).get_all("buckets/#{project_id}/vaults/#{vault_id}/documents")
+        def call(project_id:, vault_id:, server_context:, page: 1)
+          docs, has_more = client(server_context:).get_page(
+            "buckets/#{project_id}/vaults/#{vault_id}/documents", {}, page: page
+          )
           docs.each { |d| d['content'] = HtmlUtils.strip_for_ai(d['content']) if d['content'] }
-          text_response(docs)
+          paginated_list_response(docs, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

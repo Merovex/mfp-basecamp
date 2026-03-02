@@ -5,20 +5,21 @@ module BasecampMcp
     class ListTemplates < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all project templates.'
+      description 'List project templates (paginated).'
 
       input_schema(
         properties: {
-          status: { type: 'string', enum: %w[active archived trashed], description: 'Filter by status' }
+          status: { type: 'string', enum: %w[active archived trashed], description: 'Filter by status' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         }
       )
 
       class << self
-        def call(server_context:, status: nil)
+        def call(server_context:, status: nil, page: 1)
           params = {}
           params[:status] = status if status
-          templates = client(server_context:).get_all('templates', params)
-          text_response(templates)
+          templates, has_more = client(server_context:).get_page('templates', params, page: page)
+          paginated_list_response(templates, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

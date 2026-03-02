@@ -5,14 +5,18 @@ module BasecampMcp
     class ListPeople < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all people on the Basecamp account.'
+      description 'List people on the Basecamp account (paginated).'
 
-      input_schema(properties: {})
+      input_schema(
+        properties: {
+          page: { type: 'integer', description: 'Page number (default: 1)' }
+        }
+      )
 
       class << self
-        def call(server_context:)
-          people = client(server_context:).get_all('people')
-          text_response(people)
+        def call(server_context:, page: 1)
+          people, has_more = client(server_context:).get_page('people', {}, page: page)
+          paginated_list_response(people, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
@@ -61,14 +65,18 @@ module BasecampMcp
     class ListPingablePeople < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List all people who can be pinged on the account.'
+      description 'List people who can be pinged on the account (paginated).'
 
-      input_schema(properties: {})
+      input_schema(
+        properties: {
+          page: { type: 'integer', description: 'Page number (default: 1)' }
+        }
+      )
 
       class << self
-        def call(server_context:)
-          people = client(server_context:).get_all('circles/people')
-          text_response(people)
+        def call(server_context:, page: 1)
+          people, has_more = client(server_context:).get_page('circles/people', {}, page: page)
+          paginated_list_response(people, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end

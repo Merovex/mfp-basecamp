@@ -5,25 +5,26 @@ module BasecampMcp
     class ListEvents < MCP::Tool
       extend BasecampMcp::ToolHelpers
 
-      description 'List events (activity log) for a recording or entire project.'
+      description 'List events (activity log) for a recording or entire project (paginated).'
 
       input_schema(
         properties: {
           project_id: { type: 'integer', description: 'The project (bucket) ID' },
-          recording_id: { type: 'integer', description: 'Optional: recording ID to scope events to a specific item' }
+          recording_id: { type: 'integer', description: 'Optional: recording ID to scope events to a specific item' },
+          page: { type: 'integer', description: 'Page number (default: 1)' }
         },
         required: ['project_id']
       )
 
       class << self
-        def call(project_id:, server_context:, recording_id: nil)
+        def call(project_id:, server_context:, recording_id: nil, page: 1)
           path = if recording_id
                    "buckets/#{project_id}/recordings/#{recording_id}/events"
                  else
                    "buckets/#{project_id}/events"
                  end
-          events = client(server_context:).get_all(path)
-          text_response(events)
+          events, has_more = client(server_context:).get_page(path, {}, page: page)
+          paginated_list_response(events, page: page, has_more: has_more)
         rescue StandardError => e
           error_response(e.message)
         end
